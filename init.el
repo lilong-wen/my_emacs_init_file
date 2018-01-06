@@ -1,6 +1,9 @@
 ;;(load-file "~/.emacs.d/3rdpart/cedet/cedet-devel-load.el") 
 ;;(load-file "~/.emacs.d/3rdpart/cedet/contrib/cedet-contrib-load.el") 
-
+;;(setq url-proxy-services
+;;   '(("no_proxy" . "^\\(localhost\\|10.*\\)")
+;;     ("http" . "127.0.0.1:8123")
+;;     ("https" . "127.0.0.1:8123")))
 
 (require 'package) ;; You might already have this line
 (let* ((no-ssl (and (memq system-type '(windows-nt ms-dos)) 
@@ -11,9 +14,9 @@
   ;; For important compatibility libraries like cl-lib
   (add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/")))
 (package-initialize) ;; You might already have this line
-
 (add-to-list 'package-archives
           '("popkit" . "http://elpa.popkit.org/packages/"))
+
 
 ;;configuring smex package
 (require 'smex) ; Not needed if you use package.el
@@ -24,6 +27,10 @@
   ;; This is your old M-x.
   (global-set-key (kbd "C-c C-c M-x") 'execute-extended-command)
 
+(setq url-gateway-method 'socks)
+(setq socks-server '("Default server" "127.0.0.1" 1080 5))
+(setq url-gateway-local-host-regexp
+      (concat "\\`" (regexp-opt '("localhost" "127.0.0.1")) "\\'"))
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
@@ -113,23 +120,35 @@
 (add-hook 'c-mode-hook 'irony-mode)
 (add-hook 'objc-mode-hook 'irony-mode)
 
-(defun my-irony-mode-hook ()
-  (define-key irony-mode-map [remap completion-at-point]
-    'irony-completion-at-point-async)
-  (define-key irony-mode-map [remap complete-symbol]
-    'irony-completion-at-point-async))
-
-(add-hook 'irony-mode-hook 'my-irony-mode-hook)
-(add-hook 'irony-mode-hook 'irony-cdb-autosetup-compile-options)
-
-(add-hook 'after-init-hook 'global-company-mode)
-
-(add-hook 'irony-mode-hook 'company-irony-setup-begin-commands)
-(setq company-backends (delete 'company-semantic company-backends))
+;;(defun my-irony-mode-hook ()
+;;  (define-key irony-mode-map [remap completion-at-point]
+;;    'irony-completion-at-point-async)
+;;  (define-key irony-mode-map [remap complete-symbol]
+;;    'irony-completion-at-point-async))
+;;
+;;(add-hook 'irony-mode-hook 'my-irony-mode-hook)
+;;(add-hook 'irony-mode-hook 'irony-cdb-autosetup-compile-options)
+;;
+;;(add-hook 'after-init-hook 'global-company-mode)
+;;
+;;(add-hook 'irony-mode-hook 'company-irony-setup-begin-commands)
+;;(setq company-backends (delete 'company-semantic company-backends))
 (require 'company-irony-c-headers)
 (eval-after-load 'company
   '(add-to-list
     'company-backends '(company-irony-c-headers company-irony)))
+
+(require 'auto-complete)
+(require 'auto-complete-config)
+(ac-config-default)
+
+(require 'yasnippet)
+(yas-global-mode 1)
+
+(defun my:ac-c-header-init()
+  (require 'auto-complete-c-headers))
+(add-hook 'c++-mode-hook 'my:ac-c-header-init)
+(add-hook 'c-mode-hook 'my:ac-c-header-init)
 
 (require 'ein)
 
