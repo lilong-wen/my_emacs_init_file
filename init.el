@@ -142,6 +142,8 @@
 (require 'auto-complete-config)
 (ac-config-default)
 
+(require 'auto-complete-auctex)
+
 (require 'yasnippet)
 (yas-global-mode 1)
 
