@@ -163,6 +163,8 @@
 (setq TeX-auto-save t)
 (setq TeX-parse-self t)
 
+(latex-preview-pane-enable)
+
 (setq-default TeX-master nil)
 
 (setq ein:use-auto-complete t)
