@@ -14,6 +14,7 @@
   ;; For important compatibility libraries like cl-lib
   (add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/")))
 (package-initialize) ;; You might already have this line
+
 (add-to-list 'package-archives
           '("popkit" . "http://elpa.popkit.org/packages/"))
 
@@ -92,8 +93,8 @@
 (elpy-enable)
 
 (setq elpy-rpc-python-command "python3")
-(elpy-use-ipython)
-(elpy-use-ipython "ipython3")
+;;(elpy-use-ipython)
+;;(elpy-use-ipython "ipython3")
 (when (require 'flycheck nil t)
   (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
   (add-hook 'elpy-mode-hook 'flycheck-mode))
@@ -163,7 +164,7 @@
 (setq TeX-auto-save t)
 (setq TeX-parse-self t)
 
-(latex-preview-pane-enable)
+
 
 (setq-default TeX-master nil)
 
@@ -181,3 +182,5 @@
 ;;(semantic-mode t)
 
 (setq bookmark-save-flag 1)
+
+;;(latex-preview-pane-enable)
