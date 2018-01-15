@@ -1,9 +1,9 @@
 ;;(load-file "~/.emacs.d/3rdpart/cedet/cedet-devel-load.el") 
 ;;(load-file "~/.emacs.d/3rdpart/cedet/contrib/cedet-contrib-load.el") 
-;;(setq url-proxy-services
-;;   '(("no_proxy" . "^\\(localhost\\|10.*\\)")
-;;     ("http" . "127.0.0.1:8123")
-;;     ("https" . "127.0.0.1:8123")))
+(setq url-proxy-services
+   '(("no_proxy" . "^\\(localhost\\|10.*\\)")
+     ("http" . "127.0.0.1:8123")
+     ("https" . "127.0.0.1:8123")))
 
 (require 'package) ;; You might already have this line
 (let* ((no-ssl (and (memq system-type '(windows-nt ms-dos)) 
