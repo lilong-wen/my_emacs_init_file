@@ -1,48 +1,29 @@
-;;(load-file "~/.emacs.d/3rdpart/cedet/cedet-devel-load.el") 
-;;(load-file "~/.emacs.d/3rdpart/cedet/contrib/cedet-contrib-load.el") 
-;;(setq url-proxy-services
-;;   '(("no_proxy" . "^\\(localhost\\|10.*\\)")
-;;     ("http" . "127.0.0.1:8123")
-;;     ("https" . "127.0.0.1:8123")))
+;;; set proxy, along with polipo and shadowsocks
+(setq url-proxy-services
+   '(("no_proxy" . "^\\(localhost\\|10.*\\)")
+     ("http" . "127.0.0.1:8123")
+     ("https" . "127.0.0.1:8123")))
+;;set melpa archives, using qinghua university source
+(require 'package)
 
-(require 'package) ;; You might already have this line
-(let* ((no-ssl (and (memq system-type '(windows-nt ms-dos)) 
-                    (not (gnutls-available-p))))
-       (url (concat (if no-ssl "http" "https") "://melpa.org/packages/")))
-  (add-to-list 'package-archives (cons "melpa" url) t))
-(when (< emacs-major-version 24)
-  ;; For important compatibility libraries like cl-lib
-  (add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/")))
+(setq package-archives '(("gnu"   . "http://elpa.emacs-china.org/gnu/")
+			 ("gnu_origin" . "http://elpa.gnu.org/packages/")
+			 ("melpa" . "http://elpa.emacs-china.org/melpa/")
+			 ("melpa_origin" . "http://melpa.org/packages/")))
+
 (package-initialize) ;; You might already have this line
-(add-to-list 'package-archives
-          '("popkit" . "http://elpa.popkit.org/packages/"))
 
-
-;;configuring smex package
-(require 'smex) ; Not needed if you use package.el
-  (smex-initialize) ; Can be omitted. This might cause a (minimal) delay
-                    ; when Smex is auto-initialized on its first run.
-(global-set-key (kbd "M-x") 'smex)
-  (global-set-key (kbd "M-X") 'smex-major-mode-commands)
-  ;; This is your old M-x.
-  (global-set-key (kbd "C-c C-c M-x") 'execute-extended-command)
-
-(setq url-gateway-method 'socks)
-(setq socks-server '("Default server" "127.0.0.1" 1080 5))
-(setq url-gateway-local-host-regexp
-      (concat "\\`" (regexp-opt '("localhost" "127.0.0.1")) "\\'"))
-
+;; set airline theme
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(ansi-color-faces-vector
-   [default default default italic underline success warning error])
  '(custom-enabled-themes (quote (tsdh-dark)))
  '(custom-safe-themes
    (quote
-    ("b59d7adea7873d58160d368d42828e7ac670340f11f36f67fa8071dbf957236a" default)))
+    ("d21135150e22e58f8c656ec04530872831baebf5a1c3688030d119c114233c24" "0cd56f8cd78d12fc6ead32915e1c4963ba2039890700458c13e12038ec40f6f5" "251348dcb797a6ea63bbfe3be4951728e085ac08eee83def071e4d2e3211acc3" "b59d7adea7873d58160d368d42828e7ac670340f11f36f67fa8071dbf957236a" default)))
+ '(doc-view-scale-internally nil)
  '(menu-bar-mode nil)
  '(scroll-bar-mode nil)
  '(tool-bar-mode nil))
@@ -51,49 +32,74 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- )
-;; '(font-lock-function-name-face ((t (:foreground "red")))))
+ '(mode-line ((t (:foreground "#030303" :background "#bdbdbd" :box nil))))
+ '(mode-line-inactive ((t (:foreground "#f9f9f9" :background "#666666" :box nil)))))
+
+(require 'airline-themes)
+(load-theme 'airline-luna)
+
+;; stop welcome page from start
+(setq inhibit-startup-message t)
+
+;; set numbers for every line
 (global-linum-mode t)
 (setq linum-format "%d ")
 
+;; set auto-complete basis
+(require 'auto-complete)
+(ac-config-default)
+;; leave python mode alone with autocomplete
+(setq ac-modes (delq 'python-mode ac-modes))
+;;(global-auto-complete-mode t)
 
-(require 'airline-themes)
-(load-theme 'airline-light)
+;; set flycheck
+(require 'use-package)
 
-;;(require 'evil)
-;;(evil-mode 1)
+(use-package flycheck
+  :ensure t
+  :init (global-flycheck-mode))
 
-
+;; set helm
 (require 'helm-config)
 (global-set-key (kbd "M-x") #'helm-M-x)
+(global-set-key (kbd "C-x r b") #'helm-filtered-bookmarks)
 (global-set-key (kbd "C-x C-f") #'helm-find-files)
 (helm-mode 1)
 
+;; set autopair
+(require 'autopair)
+(autopair-global-mode)
 
-(setq x-select-enable-clipboard t)
-(unless window-system
- (when (getenv "DISPLAY")
-  (defun xsel-cut-function (text &optional push)
-    (with-temp-buffer
-      (insert text)
-      (call-process-region (point-min) (point-max) "xsel" nil 0 nil "--clipboard" "--input")))
-  (defun xsel-paste-function()
-    (let ((xsel-output (shell-command-to-string "xsel --clipboard --output")))
-      (unless (string= (car kill-ring) xsel-output)
-	xsel-output )))
-  (setq interprogram-cut-function 'xsel-cut-function)
-  (setq interprogram-paste-function 'xsel-paste-function)
-  ))
+;; set auctex
+(require 'auto-complete-auctex)
 
-(setq py-python-command "python3")
-(setq python-shell-interpreter "python3")
-(global-flycheck-mode)
+(setq TeX-auto-save t)
+(setq TeX-parse-self t)
+(setq-default TeX-master nil)
+(setq TeX-save-query nil)
+(setq TeX-PDF-mode t)
 
+(add-hook 'LaTeX-mode-hook 'flyspell-mode)
+(add-hook 'LaTeX-mode-hook 'flyspell-buffer)
+
+(latex-preview-pane-enable)
+
+;; set yasnippets
+(require 'yasnippet)
+(require 'yasnippet-snippets)
+(yas-global-mode 1)
+
+;; set spell check
+(setq ispell-program-name "aspell") ; could be ispell as well, depending on your preferences
+(setq ispell-dictionary "english") ; this can obviously be set to any language your spell-checking program supports
+
+
+;;; Configuration for python
 (elpy-enable)
-
 (setq elpy-rpc-python-command "python3")
-(elpy-use-ipython)
-(elpy-use-ipython "ipython3")
+
+(setq python-shell-interpreter "ipython3"
+      python-shell-interpreter-args "-i --simple-prompt")
 (when (require 'flycheck nil t)
   (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
   (add-hook 'elpy-mode-hook 'flycheck-mode))
@@ -102,82 +108,137 @@
 (add-hook 'elpy-mode-hook 'py-autopep8-enable-on-save)
 (setq py-autopep8-options '("--max-line-length=100"))
 
-(require 'autopair)
-(autopair-global-mode) ;; enable autopair in all buffers
-
-;;(electric-pair-mode 1)
-
-
-;(eval-after-load 'company
-;  '(add-to-list 'company-backends 'company-irony))
-
-;;(add-hook 'c++-mode-hook 'irony-mode)
-;;(add-hook 'c-mode-hook 'irony-mode)
-;;(add-hook 'objc-mode-hook 'irony-mode)
-;;(add-hook 'irony-mode-hook 'irony-cdb-autosetup-compile-options)
-
-(add-hook 'c++-mode-hook 'irony-mode)
-(add-hook 'c-mode-hook 'irony-mode)
-(add-hook 'objc-mode-hook 'irony-mode)
-
-;;(defun my-irony-mode-hook ()
-;;  (define-key irony-mode-map [remap completion-at-point]
-;;    'irony-completion-at-point-async)
-;;  (define-key irony-mode-map [remap complete-symbol]
-;;    'irony-completion-at-point-async))
-;;
-;;(add-hook 'irony-mode-hook 'my-irony-mode-hook)
-;;(add-hook 'irony-mode-hook 'irony-cdb-autosetup-compile-options)
-;;
-;;(add-hook 'after-init-hook 'global-company-mode)
-;;
-;;(add-hook 'irony-mode-hook 'company-irony-setup-begin-commands)
-;;(setq company-backends (delete 'company-semantic company-backends))
-(require 'company-irony-c-headers)
-(eval-after-load 'company
-  '(add-to-list
-    'company-backends '(company-irony-c-headers company-irony)))
-
-(require 'auto-complete)
-(require 'auto-complete-config)
-(ac-config-default)
-
-(require 'auto-complete-auctex)
-
-(require 'yasnippet)
-(yas-global-mode 1)
-
-(defun my:ac-c-header-init()
-  (require 'auto-complete-c-headers))
-(add-hook 'c++-mode-hook 'my:ac-c-header-init)
-(add-hook 'c-mode-hook 'my:ac-c-header-init)
-(require 'ac-c-headers)
-
-(add-hook 'c-mode-hook
-          (lambda ()
-            (add-to-list 'ac-sources 'ac-source-c-headers)
-            (add-to-list 'ac-sources 'ac-source-c-header-symbols t)))
-
 (require 'ein)
-
-(setq TeX-auto-save t)
-(setq TeX-parse-self t)
-
-(latex-preview-pane-enable)
-
-(setq-default TeX-master nil)
-
 (setq ein:use-auto-complete t)
 (setq ein:use-smartrep t)
 
+;;; Configuration for python
 
-(require 'pony-mode)
+;; set neotree
 (require 'neotree)
-(put 'set-goal-column 'disabled nil)
 
+;;; Configuration for doc view auto width
 
-(require 'cedet)
+(add-to-list
+    'load-path 
+    (expand-file-name "others" user-emacs-directory))
 
-;;(semantic-mode t)
+(add-hook 'doc-view-mode-hook 'doc-view-fit-width-to-window)
+(defadvice doc-view-display (after fit-width activate)
+  (doc-view-fit-width-to-window))
 
-(setq bookmark-save-flag 1)
+;;; Configuration for auto complete c header
+
+(defun my:ac-c-header-init ()
+  (require 'auto-complete-c-headers)
+  (add-to-list 'ac-sources 'ac-source-c-headers)
+  (add-to-list 'achead:include-directories '"/usr/include")
+  (add-to-list 'achead:include-directories '"/usr/include/c++/5")
+  (add-to-list 'achead:include-directories '"/usr/include/x86_64-linux-gnu/c++/5")
+  (add-to-list 'achead:include-directories '"/usr/include/x86_64-linux-gnu/c++/5")
+  (add-to-list 'achead:include-directories '"/usr/include/c++/5/backward")
+  (add-to-list 'achead:include-directories '"/usr/lib/gcc/x86_64-linux-gnu/5/include")
+  (add-to-list 'achead:include-directories '"/usr/local/include")
+  (add-to-list 'achead:include-directories '"/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed")
+  (add-to-list 'achead:include-directories '"/usr/include/x86_64-linux-gnu")
+  )
+
+(add-hook 'cc-mode-hook 'my:ac-c-header-init)
+(add-hook 'c++-mode-hook 'my:ac-c-header-init)
+(add-hook 'c-mode-hook 'my:ac-c-header-init)
+(setq ac-disable-faces nil)
+
+;;; web beauty Configuration
+
+(require 'js2-mode)
+(add-hook 'js-mode-hook 'js2-minor-mode)
+(add-to-list 'interpreter-mode-alist '("node" . js2-mode))
+
+(require 'web-beautify) ;; Not necessary if using ELPA package
+(eval-after-load 'js2-mode
+  '(define-key js2-mode-map (kbd "C-c b") 'web-beautify-js))
+;; Or if you're using 'js-mode' (a.k.a 'javascript-mode')
+(eval-after-load 'js
+  '(define-key js-mode-map (kbd "C-c b") 'web-beautify-js))
+
+(eval-after-load 'json-mode
+  '(define-key json-mode-map (kbd "C-c b") 'web-beautify-js))
+
+(eval-after-load 'sgml-mode
+  '(define-key html-mode-map (kbd "C-c b") 'web-beautify-html))
+
+(eval-after-load 'web-mode
+  '(define-key web-mode-map (kbd "C-c b") 'web-beautify-html))
+
+(eval-after-load 'css-mode
+  '(define-key css-mode-map (kbd "C-c b") 'web-beautify-css))
+
+;; (add-hook 'js2-mode-hook 'skewer-mode)
+;; (add-hook 'css-mode-hook 'skewer-css-mode)
+;; (add-hook 'html-mode-hook 'skewer-html-mode)
+
+;; impatient-mode for real time html
+(require 'impatient-mode)
+
+;; ace-jump-mode for highlight words input
+(autoload
+  'ace-jump-mode
+  "ace-jump-mode"
+  "Emacs quick move minor mode"
+  t)
+;; you can select the key you prefer to
+(define-key global-map (kbd "C-c SPC") 'ace-jump-mode) 
+
+(autoload
+  'ace-jump-mode-pop-mark
+  "ace-jump-mode"
+  "Ace jump back:-)"
+  t)
+(eval-after-load "ace-jump-mode"
+  '(ace-jump-mode-enable-mark-sync))
+(define-key global-map (kbd "C-x SPC") 'ace-jump-mode-pop-mark)
+
+;;solidity
+(require 'solidity-mode)
+(setq solidity-flycheck-solc-checker-active t)
+
+;; racket
+(require 'racket-mode)
+(setq racket-racket-program "racket")
+(setq racket-raco-program "raco")
+(add-hook 'racket-mode-hook
+(lambda ()
+(define-key racket-mode-map (kbd "C-x C-j") 'racket-run)))
+(setq tab-always-indent 'complete) ;; 使用tab自动补全
+
+;; max size
+(defun toggle-fullscreen ()
+  (interactive)
+  (x-send-client-message nil 0 nil "_NET_WM_STATE" 32
+                 '(2 "_NET_WM_STATE_MAXIMIZED_VERT" 0))
+  (x-send-client-message nil 0 nil "_NET_WM_STATE" 32
+                 '(2 "_NET_WM_STATE_MAXIMIZED_HORZ" 0))
+)
+(toggle-fullscreen)
+
+;;html autocomplete
+(defun setup-ac-for-html ()
+  ;; Require ac-html since we are setup html auto completion
+  (require 'ac-html)
+  ;; Require default data provider if you want to use
+  (require 'ac-html-default-data-provider)
+  ;; Enable data providers,
+  ;; currently only default data provider available
+  (ac-html-enable-data-provider 'ac-html-default-data-provider)
+  ;; Let ac-html do some setup
+  (ac-html-setup)
+  ;; Set your ac-source
+  (setq ac-sources '(ac-source-html-tag
+                     ac-source-html-attr
+                     ac-source-html-attrv))
+  ;; Enable auto complete mode
+  (auto-complete-mode))
+
+(add-hook 'html-mode-hook 'setup-ac-for-html)
+
+;;; init.el ends here
